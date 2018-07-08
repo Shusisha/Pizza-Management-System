@@ -1,12 +1,20 @@
 from tkinter import *
 import time
+from time import*
 from sqlite3 import *
-import random
 from tkinter import messagebox
-
+import re
+import itertools
+import os
+import shutil
+import threading
+from PIL import Image, ImageTk
 class Pizza:
     cartlist=[]
     amount=0
+    money=0
+    s=0
+    
 #--  page 1------
     def main(sf):
         try:
@@ -19,8 +27,7 @@ class Pizza:
                 pass
 
         sf.scr.geometry("1366x768")
-        sf.scr.title("PIZZA SAFARI")
-        #sf.scr.resizable(False, False)
+        sf.scr.title("Shusisha's Pizza")
         sf.scr.iconbitmap('p.ico')
         sf.mainf1=Frame(sf.scr,height=150,width=1366)
         sf.logo=PhotoImage(file="logo1.png")
@@ -41,10 +48,13 @@ class Pizza:
     def Login(sf):
         sf.cartlist=[]
         sf.amount=0
+        sf.s=""
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
+        
         #sf.scr.resizable(False, False)
         sf.loginf1=Frame(sf.scr,height=150,width=1366)
         sf.logo=PhotoImage(file="logo.PNG")
@@ -70,11 +80,11 @@ class Pizza:
         sf.log.place(x=59,y=105)
         sf.lab1=Label(sf.loginf2,text="UserName",bg="#d3ede6",font=("cooper black",22))
         sf.lab1.place(x=100,y=180)
-        sf.user=Entry(sf.loginf2,bg="white",font=("cooper black",22),bd=6 ,justify='left')
+        sf.user=Entry(sf.loginf2,bg="white",font=("Arial",22),bd=6 ,justify='left')
         sf.user.place(x=320,y=180)
         sf.lab2=Label(sf.loginf2,text="Password",bg="#d3ede6",font=("cooper black",22))
         sf.lab2.place(x=105,y=250)
-        sf.pasd=Entry(sf.loginf2,bg="white",font=("cooper black",22),bd=6 ,justify='left')
+        sf.pasd=Entry(sf.loginf2,bg="white",show="*",font=("Arial",22),bd=6 ,justify='left')
         sf.pasd.place(x=320,y=250)
         sf.lg=Button(sf.loginf2,text="Login",cursor="hand2",command=lambda:sf.logindatabase(),fg="white",bg="#0b1335",font=("cooper black",20),bd=4)
         sf.lg.place(x=180,y=320)
@@ -83,29 +93,66 @@ class Pizza:
             sf.pasd.delete(0,END)
         sf.cl=Button(sf.loginf2,text="Clear",cursor="hand2",command=lambda:clear(sf),fg="white",bg="#0b1335",font=("cooper black",20),bd=4)
         sf.cl.place(x=450,y=320)
-        sf.rg=Button(sf.loginf2,text="New to Shusisha's Pizza",command=lambda:sf.Register(),fg="white",cursor="hand2",bg="#8c68c1",font=("cooper black",20),bd=6)
+        sf.rg=Button(sf.loginf2,text="New to Shusisha's Pizza",command=lambda:sf.Register(),fg="white",cursor="hand2",bg="#8c68c1",font=("cooper black",18),bd=6)
         sf.rg.place(x=200,y=390)
-        sf.c.create_rectangle(850,120,1310,480,fill="#d3ede6",outline="white",width=4)
-        sf.ext=PhotoImage(file="p4.png")
-        sf.url=Label(sf.loginf2,image=sf.ext,cursor="hand2").place(x=855,y=125)
+        sf.c.create_rectangle(840,90,1310,460,fill="#d3ede6",outline="white",width=4)
+        frame=Frame(sf.c)
+        frame.place(x=850,y=100)
+        sf.ext=PhotoImage(file="p0.png")
+        sf.c.create_image(1075,275,image=sf.ext)
+        def update_image_file(dst):
+            TEST_IMAGES = 'p0.png','p1.png', 'p2.png', 'p3.png', 'p4.png','p5.png', 'p6.png', 'p7.png', 'p8.png','p9.png'
+            for src in itertools.cycle(TEST_IMAGES):
+                shutil.copy(src, dst)
+                time.sleep(1)
+        def refresh_image(canvas, img, image_path, image_id):
+            try:
+                pil_img = Image.open(image_path).resize((450,350), Image.ANTIALIAS)
+                img = ImageTk.PhotoImage(pil_img)
+                canvas.itemconfigure(image_id, image=img)
+            except IOError: 
+                img = "p1.png"
+            canvas.after(500, refresh_image, canvas, img, image_path, image_id)
+        try:
+            image_path = 'test.png'
+            th = threading.Thread(target=update_image_file, args=(image_path,))
+            th.daemon = True  # terminates whenever main thread does
+            th.start()
+            while not os.path.exists(image_path):
+                time.sleep(0)
+            canvas =Canvas(frame, height=350, width=450)
+            img=None
+            image_id = canvas.create_image(225, 175, image=img)
+            canvas.pack()
+            refresh_image(canvas, img, image_path, image_id)
+        except:
+            sf.ext=PhotoImage(file="p0.png")
+            sf.c.create_image(1075,275,image=sf.ext)
         sf.loginf2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
     def resultlog(sf):
         sf.loguser=sf.user.get()
         sf.logpass=sf.pasd.get()
         return sf.loguser,sf.logpass
+    
 
     def about(sf):
         sf.scr1=Tk()
-        sf.L=Label(sf.scr1,text="NEW PIZZA SHOP")
+        sf.scr1.title("Shusisha's Pizza")
+        sf.scr1.geometry("400x300")
+        sf.L=Label(sf.scr1,text="Shusisha's Pizza ",font=("cooper black",22))
+        sf.L2=Label(sf.scr1,text="Newly Opened Pizza Shop",font=("ariel",20))
         sf.L.pack()
+        sf.L2.pack()
         sf.scr1.mainloop()
 #--  page 3------
     def Adminlogin(sf):
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
+        
         #sf.scr.resizable(False, False)
         sf.adminf1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.adminf1,height=150,width=1366)
@@ -132,7 +179,7 @@ class Pizza:
         sf.usera.place(x=650,y=200)
         sf.lab2=Label(sf.adminf2,text="Password",bg="#d3ede6",font=("cooper black",22))
         sf.lab2.place(x=405,y=270)
-        sf.pasda=Entry(sf.adminf2,bg="white",font=("cooper black",22),bd=5)
+        sf.pasda=Entry(sf.adminf2,bg="white",show="*",font=("cooper black",22),bd=5)
         sf.pasda.place(x=650,y=270)
         sf.lg=Button(sf.adminf2,text="Login",cursor="hand2",fg="white",bg="#0b1335",command=lambda:sf.admindatabase(),font=("copper black",20,'bold'),bd=5)
         sf.lg.place(x=650,y=350)
@@ -156,8 +203,10 @@ class Pizza:
     def Register(sf):
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
+        
         #sf.scr.resizable(False, False)
         sf.regf1=Frame(sf.scr,height=150,width=1366)
         sf.logo=PhotoImage(file="logo.PNG")
@@ -183,27 +232,27 @@ class Pizza:
         sf.log.place(x=480,y=120)
         sf.lab1=Label(sf.regf2,text="FirstName",bg="#d3ede6",font=("cooper black",18))
         sf.lab1.place(x=190,y=200)
-        sf.first=Entry(sf.regf2,bg="white",width=15,font=("cooper black",18),bd=5)
+        sf.first=Entry(sf.regf2,bg="white",width=15,font=("Arial",18,'bold'),bd=5)
         sf.first.place(x=430,y=200)
         sf.lab2=Label(sf.regf2,text="LastName",bg="#d3ede6",font=("cooper black",18))
         sf.lab2.place(x=730,y=200)
-        sf.last=Entry(sf.regf2,bg="white",width=15,font=("cooper black",18),bd=5)
+        sf.last=Entry(sf.regf2,bg="white",width=15,font=("Arial",18,'bold'),bd=5)
         sf.last.place(x=920,y=200)
         sf.lab3=Label(sf.regf2,text="Username",bg="#d3ede6",font=("cooper black",18))
         sf.lab3.place(x=190,y=250)
-        sf.usern=Entry(sf.regf2,bg="white",width=15,font=("cooper black",18),bd=5)
+        sf.usern=Entry(sf.regf2,bg="white",width=15,font=("Arial",18,'bold'),bd=5)
         sf.usern.place(x=430,y=250)
         sf.lab4=Label(sf.regf2,text="Password",bg="#d3ede6",font=("cooper black",18))
         sf.lab4.place(x=730,y=250)
-        sf.passd=Entry(sf.regf2,bg="white",width=15,font=("cooper black",18),bd=5)
+        sf.passd=Entry(sf.regf2,bg="white",show="*",width=15,font=("Arial",18,'bold'),bd=5)
         sf.passd.place(x=920,y=250)
         sf.lab5=Label(sf.regf2,text="Email",bg="#d3ede6",font=("cooper black",18))
         sf.lab5.place(x=190,y=300)
-        sf.email=Entry(sf.regf2,bg="white",width=15,font=("cooper black",18),bd=5)
+        sf.email=Entry(sf.regf2,bg="white",width=15,font=("Arial",18,'bold'),bd=5)
         sf.email.place(x=430,y=300)
         sf.lab6=Label(sf.regf2,text="Mobile No.",bg="#d3ede6",font=("cooper black",18))
         sf.lab6.place(x=730,y=300)
-        sf.mob=Entry(sf.regf2,bg="white",width=15,font=("cooper black",18),bd=5)
+        sf.mob=Entry(sf.regf2,bg="white",width=15,font=("Arial",18,'bold'),bd=5)
         sf.mob.place(x=920,y=300)
         sf.bc=Button(sf.regf2,text="Back",cursor="hand2",command=lambda:sf.Login(),fg="white",bg="#0b1335",font=("cooper black",18),bd=5)
         sf.bc.place(x=370,y=370)
@@ -230,12 +279,14 @@ class Pizza:
         return sf.reguser,sf.regpasd,sf.firstname,sf.lastname,sf.Email,sf.Mob
 
 #--  page 5------
-    def adminmain(sf):
+    def adminmain(sf,username):
         sf.scr.destroy()
         sf.scr = Tk()
         #sf.scr.config(bg="#f2e8b8")
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
+        
 
         sf.admainf1=Frame(sf.scr,bg="#f2e8b8",height=150,width=1366)
         sf.admainf1.pack(side=TOP,fill=BOTH)
@@ -243,12 +294,16 @@ class Pizza:
         sf.c.pack()
         sf.logo=PhotoImage(file="logo2.png")
         sf.c.create_image(683,50,image=sf.logo)
+        sf.c.create_text(850,80,text="WELCOME : ",fill="white",font=("default",18))
+        sf.name=username
+        sf.c.create_text(1000,80,text=sf.name,fill="white",font=("default",16))
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(900,50,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(930,40,text=sf.localtime,fill="white",font=("default",16))
         sf.c.create_text(683,125,font=( 'Cooper Black' ,25, 'bold','underline' ),text="Management System")
         sf.out=Button(sf.admainf1,text="Log Out",bg="#0b1335",cursor="hand2",command=lambda:sf.Adminlogin(),fg="white",bd=5,font=("default",16,'bold'))
-        sf.out.place(x=1100,y=25)
-
+        sf.out.place(x=1150,y=40)
+        a1,a2,a3,a4,a5,a6,a7,a8=0,0,0,0,0,0,0,0
+        
         def Ref(sf):
             sf.con=connect("pizza.db")
 ##            sf.x=random.randint(100, 500)
@@ -265,74 +320,97 @@ class Pizza:
 
             sf.v1=sf.vp1.get()
             if sf.v1=="Medium":
-                sf.p1=float(sf.Deluxe_Veggie.get())*450
+                sf.a1=sf.Deluxe_Veggie.get()
+                sf.p1=float(sf.a1)*450
             elif sf.v1=="Large":
-                sf.p1=float(sf.Deluxe_Veggie.get())*650
+                sf.a1=sf.Deluxe_Veggie.get()
+                sf.p1=float(sf.a1)*650
             else:
-                sf.p1=float(sf.Deluxe_Veggie.get())*250
+                sf.a1=sf.Deluxe_Veggie.get()
+                sf.p1=float(sf.a1)*250
             sf.v2=sf.vp2.get()
             if sf.v2=="Medium":
-                sf.p2= float(sf.Veg_Vaganza.get())*400
+                sf.a2=sf.Veg_Vaganza.get()
+                sf.p2= float(sf.a2)*400
             elif sf.v2=="Large":
-                sf.p2= float(sf.Veg_Vaganza.get())*600
+                sf.a2=sf.Veg_Vaganza.get()
+                sf.p2= float(sf.a2)*600
             else:
-                sf.p2= float(sf.Veg_Vaganza.get())*250
+                sf.a2=sf.Veg_Vaganza.get()
+                sf.p2= float(sf.a2)*250
             sf.v3=sf.vp3.get()
             if sf.v3=="Medium":
-                sf.p3= float(sf.Pepper.get())*385
+                sf.a3=sf.Pepper.get()
+                sf.p3= float(sf.a3)*385
             elif sf.v3=="Large":
-                sf.p3= float(sf.Pepper.get())*550
+                sf.a3=sf.Pepper.get()
+                sf.p3= float(sf.a3)*550
             else:
-                sf.p3= float(sf.Pepper.get())*225
+                sf.a3=sf.Pepper.get()
+                sf.p3= float(sf.a3)*225
             sf.v4=sf.vp4.get()
             if sf.v4=="Medium":
-                sf.p4= float(sf.Margherita.get())*195
+                sf.a4=sf.Margherita.get()
+                sf.p4= float(sf.a4)*195
             elif sf.v4=="Large":
-                sf.p4= float(sf.Margherita.get())*385
+                sf.a4=sf.Margherita.get()
+                sf.p4= float(sf.a4)*385
             else:
-                sf.p4= float(sf.Margherita.get())*99
+                sf.a4=sf.Margherita.get()
+                sf.p4= float(sf.a4)*99
             sf.v5=sf.vp5.get()
             if sf.v5=="Medium":
-                sf.p5= float(sf.Non_Veg_Supreme.get())*450
+                sf.a5=sf.Non_Veg_Supreme.get()
+                sf.p5= float(sf.a5)*450
             elif sf.v5=="Large":
-                sf.p5= float(sf.Non_Veg_Supreme.get())*650
+                sf.a5=sf.Non_Veg_Supreme.get()
+                sf.p5= float(sf.a5)*650
             else:
-                sf.p5= float(sf.Non_Veg_Supreme.get())*250
+                sf.a5=sf.Non_Veg_Supreme.get()
+                sf.p5= float(sf.a5)*250
             sf.v6=sf.vp6.get()
             if sf.v6=="Medium":
-                sf.p6= float(sf.Chicken_Tikka.get())*400
+                sf.a6=sf.Chicken_Tikka.get()
+                sf.p6= float(sf.a6)*400
             elif sf.v6=="Large":
-                sf.p6= float(sf.Chicken_Tikka.get())*600
+                sf.a6=sf.Chicken_Tikka.get()
+                sf.p6= float(sf.a6)*600
             else:
-                sf.p6= float(sf.Chicken_Tikka.get())*225
+                sf.a6=sf.Chicken_Tikka.get()
+                sf.p6= float(sf.a6)*225
             sf.v7=sf.vp7.get()
             if sf.v7=="Medium":
-                sf.p7= float(sf.Chicken_Sausage.get())*385
+                sf.a7=sf.Chicken_Sausage.get()
+                sf.p7= float(sf.a7)*385
             elif sf.v7=="Large":
-                sf.p7= float(sf.Chicken_Sausage.get())*550
+                sf.a7=sf.Chicken_Sausage.get()
+                sf.p7= float(sf.a7)*550
             else:
-                sf.p7= float(sf.Chicken_Sausage.get())*225
+                sf.a7=sf.Chicken_Sausage.get()
+                sf.p7= float(sf.a7)*225
             sf.v8=sf.vp8.get()
             if sf.v8=="Medium":
-                sf.p8= float(sf.Chicken_Peri.get())*195
+                sf.a8=sf.Chicken_Peri.get()
+                sf.p8= float(sf.a8)*195
             elif sf.v8=="Large":
-                sf.p8= float(sf.Chicken_Peri.get())*385
+                sf.a8=sf.Chicken_Peri.get()
+                sf.p8= float(sf.a8)*385
             else:
-                sf.p8= float(sf.Chicken_Peri.get())*99
+                sf.a8=sf.Chicken_Peri.get()
+                sf.p8= float(sf.a8)*99
             sf.p9= float(sf.Roasted_Chicken.get())*109
             sf.p10= float(sf.Chicken_Meatballs.get())*99
             sf.p11= float(sf.Boneles_sChicken.get())*139
             sf.p12= float(sf.Coke_Mobile.get())*45
             sf.p13= float(sf.Burger_Pizza.get())*99
             sf.p14= float(sf.White_Pasta.get())*135
-            
-            sf.costofmeal = "Rs.",str('%.2f'% (sf.p1+sf.p2+sf.p3+sf.p4+sf.p5+sf.p6+sf.p7+sf.p8+sf.p9+sf.p10+sf.p11+sf.p12+sf.p13+sf.p14))
+            sf.costofmeal = "₹",str('%.2f'% (sf.p1+sf.p2+sf.p3+sf.p4+sf.p5+sf.p6+sf.p7+sf.p8+sf.p9+sf.p10+sf.p11+sf.p12+sf.p13+sf.p14))
             sf.PayTax=((sf.p1+sf.p2+sf.p3+sf.p4+sf.p5+sf.p6+sf.p7+sf.p8+sf.p9+sf.p10+sf.p11+sf.p12+sf.p13+sf.p14)*.05)
             sf.Totalcost=(sf.p1+sf.p2+sf.p3+sf.p4+sf.p5+sf.p6+sf.p7+sf.p8+sf.p9+sf.p10+sf.p11+sf.p12+sf.p13+sf.p14)
             sf.Ser_Charge=((sf.p1+sf.p2+sf.p3+sf.p4+sf.p5+sf.p6+sf.p7+sf.p8+sf.p9+sf.p10+sf.p11+sf.p12+sf.p13+sf.p14)/99)
-            sf.Service="Rs."+str('%.2f'% sf.Ser_Charge)
-            sf.OverAllCost="Rs."+str(int(sf.PayTax + sf.Totalcost + sf.Ser_Charge))
-            sf.PaidTax="Rs."+str('%.2f'% sf.PayTax)
+            sf.Service="₹ "+str('%.2f'% sf.Ser_Charge)
+            sf.OverAllCost="₹ "+str(int(sf.PayTax + sf.Totalcost + sf.Ser_Charge))
+            sf.PaidTax="₹ "+str('%.2f'% sf.PayTax)
             sf.money=int(sf.PayTax + sf.Totalcost + sf.Ser_Charge)
             sf.Service_Charge.set(sf.Service)
             sf.cost.set(sf.costofmeal)
@@ -340,6 +418,7 @@ class Pizza:
             sf.Total.set(sf.OverAllCost) 
 
         def reset(sf):
+            sf.money=0
             sf.Deluxe_Veggie.set("0")
             sf.Veg_Vaganza.set("0")
             sf.Pepper.set("0")
@@ -688,24 +767,22 @@ class Pizza:
 
         sf.btnpay=Button(sf.admainf2,pady=2, bd=6 ,fg="black",font=('ariel' ,16,'bold'),width=6, text="PAY", bg="powder blue",command=lambda:sf.adminorderdetail())
         sf.btnpay.place(x=1160,y=500)
-
         sf.scr.mainloop()
-
     def resultadminorder(sf):
-        r1=sf.Deluxe_Veggie.get()
-        r2=sf.Veg_Vaganza.get()
-        r3=sf.Pepper.get()
-        r4=sf.Margherita.get()
-        r5=sf.Non_Veg_Supreme.get()
-        r6=sf.Chicken_Tikka.get()
-        r7=sf.Chicken_Sausage.get()
-        r8=sf.Chicken_Peri.get()
-        r9=sf.Coke_Mobile.get()
-        r10=sf.Burger_Pizza.get()
-        r11=sf.White_Pasta.get()
-        r12=sf.Roasted_Chicken.get()
-        r13=sf.Chicken_Meatballs.get()
-        r14=sf.Boneles_sChicken.get()
+        r1="Deluxe Veggie"
+        r2="Veg Vaganza"
+        r3="Pepper"
+        r4="Margherita"
+        r5="Non Veg Supreme"
+        r6="Chicken Tikka"
+        r7="Chicken Sausage"
+        r8="Chicken Peri"
+        r9="Coke Mobile"
+        r10="Burger Pizza"
+        r11="White Pasta"
+        r12="Roasted Chicken"
+        r13="Chicken Meatballs"
+        r14="Boneles_sChicken"
         r20=sf.Cutomer_name.get()
         r21=sf.cusmob.get()
         r22=sf.vp1.get()
@@ -731,14 +808,14 @@ class Pizza:
         r42=sf.txtbur.get()
         r43=sf.txtpas.get()
 
-        l1=[r1,r22,30]
-        l2=[r2,r23,31]
-        l3=[r3,r24,32]
-        l4=[r4,r25,33]
-        l5=[r5,r26,34]
-        l6=[r6,r27,35]
-        l7=[r7,r28,36]
-        l8=[r8,r29,37]
+        l1=[r1,r22,r30]
+        l2=[r2,r23,r31]
+        l3=[r3,r24,r32]
+        l4=[r4,r25,r33]
+        l5=[r5,r26,r34]
+        l6=[r6,r27,r35]
+        l7=[r7,r28,r36]
+        l8=[r8,r29,r37]
         l9=[r12,r38]
         l10=[r13,r39]
         l11=[r14,r40]
@@ -750,22 +827,26 @@ class Pizza:
 
 
 #--  page 6------        
-    def menulist(sf,x):
+    def menulist(sf,x,username):
         sf.x=x
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
         #sf.scr.resizable(False, False)
         sf.menuf1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.menuf1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
+        sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
         sf.home=Button(sf.menuf1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
-        sf.home.place(x=1000,y=90)
+        sf.home.place(x=1200,y=90)
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(1000,50,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(950,50,text=sf.localtime,fill="white",font=("default",16))
         sf.menuf1.pack(fill=BOTH,expand=1)
 
         sf.menuf2=Frame(sf.scr,height=618,width=1366)
@@ -776,42 +857,44 @@ class Pizza:
         sf.c.create_rectangle(50, 140, 1316, 420,fill="#d3ede6",outline="white",width=6)
         sf.veg=PhotoImage(file="veg.png")
         sf.c.create_image(230,250,image=sf.veg)
-        sf.vegbut=Button(sf.menuf2,text="Veg Pizza",cursor="hand2",fg="white",command=lambda:sf.vegpizza(sf.x),bg="#0b1335",bd=5,font=("default",18,'bold'))
+        sf.vegbut=Button(sf.menuf2,text="Veg Pizza",cursor="hand2",fg="white",command=lambda:sf.vegpizza(sf.x,username),bg="#0b1335",bd=5,font=("default",18,'bold'))
         sf.vegbut.place(x=170,y=350)
         sf.nonveg=PhotoImage(file="Non.png")
         sf.c.create_image(530,250,image=sf.nonveg)
-        sf.nonvegbut=Button(sf.menuf2,text="Non-Veg Pizza",cursor="hand2",fg="white",command=lambda:sf.nonvegpiz(sf.x),bg="#0b1335",bd=5,font=("default",18,'bold'))
+        sf.nonvegbut=Button(sf.menuf2,text="Non-Veg Pizza",cursor="hand2",fg="white",command=lambda:sf.nonvegpiz(sf.x,username),bg="#0b1335",bd=5,font=("default",18,'bold'))
         sf.nonvegbut.place(x=440,y=350)
         sf.chi=PhotoImage(file="chiken.png")
         sf.c.create_image(830,250,image=sf.chi)
-        sf.chibut=Button(sf.menuf2,text="Special Chicken",cursor="hand2",fg="white",command=lambda:sf.SpecialChi(sf.x),bg="#0b1335",bd=5,font=("default",18,'bold'))
+        sf.chibut=Button(sf.menuf2,text="Special Chicken",cursor="hand2",fg="white",command=lambda:sf.SpecialChi(sf.x,username),bg="#0b1335",bd=5,font=("default",18,'bold'))
         sf.chibut.place(x=730,y=350)
         sf.side=PhotoImage(file="extra.png")
         sf.c.create_image(1130,250,image=sf.side)
-        sf.sidebut=Button(sf.menuf2,text="Sides and Beverages",cursor="hand2",fg="white",command=lambda:sf.sidebev(sf.x),bg="#0b1335",bd=5,font=("default",18,'bold'))
+        sf.sidebut=Button(sf.menuf2,text="Sides and Beverages",cursor="hand2",fg="white",command=lambda:sf.sidebev(sf.x,username),bg="#0b1335",bd=5,font=("default",18,'bold'))
         sf.sidebut.place(x=1000,y=350)
         sf.menuf2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
 
 #--  page 7------
-    def pizmain(sf):
+    def pizmain(sf,username):
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
+        
         #sf.scr.resizable(False, False)
         sf.pizf1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.pizf1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
-        sf.c.create_text(950,80,text="WELCOME",fill="white",font=("default",20))
-        sf.name="Shubham Singh"
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
         sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
         sf.out=Button(sf.pizf1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",font=("default",16))
         sf.out.place(x=1200,y=100)
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(1000,40,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(950,40,text=sf.localtime,fill="white",font=("default",16))
         sf.pizf1.pack(fill=BOTH,expand=1)
 
         sf.pizf2=Frame(sf.scr,height=618,width=1366)
@@ -824,9 +907,9 @@ class Pizza:
         sf.c.create_image(540,260,image=sf.deli)
         sf.pic=PhotoImage(file="pick.png")
         sf.c.create_image(825,260,image=sf.pic)
-        sf.de=Button(sf.pizf2,text="Delivery",cursor="hand2",fg="white",command=lambda:sf.menulist("deli"),bg="#0b1335",font=("default",20),bd=5)
+        sf.de=Button(sf.pizf2,text="Delivery",cursor="hand2",fg="white",command=lambda:sf.menulist("deli",username),bg="#0b1335",font=("default",20),bd=5)
         sf.de.place(x=480,y=400)
-        sf.pu=Button(sf.pizf2,text="Pick Up",cursor="hand2",fg="white",command=lambda:sf.menulist("pick"),bg="#0b1335",font=("default",20),bd=5)
+        sf.pu=Button(sf.pizf2,text="Pick Up",cursor="hand2",fg="white",command=lambda:sf.menulist("pick",username),bg="#0b1335",font=("default",20),bd=5)
         sf.pu.place(x=770,y=400)
         sf.c.create_rectangle(405,125,678,465,outline="black",width=2)
         sf.c.create_rectangle(688,125,960,465,outline="black",width=2)
@@ -834,22 +917,27 @@ class Pizza:
         sf.scr.mainloop()
 
 #--  page 8------
-    def vegpizza(sf,x):
+    def vegpizza(sf,x,username):
         sf.x=x
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
+        
         #sf.scr.resizable(False, False)
         sf.vegf1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.vegf1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
+        sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
         sf.home=Button(sf.vegf1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
-        sf.home.place(x=1000,y=90)
+        sf.home.place(x=1200,y=90)
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(1000,50,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(950,50,text=sf.localtime,fill="white",font=("default",16))
         sf.vegf1.pack(fill=BOTH,expand=1)
 
         sf.vegf2=Frame(sf.scr,height=618,width=1366)
@@ -873,7 +961,7 @@ class Pizza:
         sf.c.create_rectangle(405, 50, 960, 170,width=2)
         sf.delu=PhotoImage(file="deluxe.png")
         sf.c.create_image(470,110,image=sf.delu)
-        sf.c.create_text(650,80,text="Deluxe Veggie",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,80,text="Deluxe Veggie    ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(860,80,text="₹450/₹650/₹250",fill="#ff3838",font=("default",17,'bold'))
         #ch1=sf.check(sf.vegf2,100)
         sf.v1=IntVar()
@@ -901,13 +989,16 @@ class Pizza:
             else:
                 ch1="Regular"
                 pric1=250
-            sf.addlist(["Deluxe Veggie",ch1,sf.q1.get(),pric1*int(sf.q1.get())])
+            try:
+                sf.addlist(["Deluxe Veggie",ch1,sf.q1.get(),pric1*int(sf.q1.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
             
         #pizza 2
         sf.c.create_rectangle(405, 170, 960, 290,width=2)
         sf.vag=PhotoImage(file="extravaganza.png")
         sf.c.create_image(470,230,image=sf.vag)
-        sf.c.create_text(650,200,text="Veg Vaganza",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,200,text="Veg Vaganza      ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(860,200,text="₹400/₹600/₹250",fill="#ff3838",font=("default",17,'bold'))
 ##        ch2=sf.check(sf.vegf2,220)
         sf.v2=IntVar()
@@ -936,7 +1027,10 @@ class Pizza:
                 ch2="Regular"
                 pric2=250
 
-            sf.addlist(["Veg Vaganza",ch2,sf.q2.get(),pric2*int(sf.q2.get())])
+            try:
+                sf.addlist(["Veg Vaganza",ch2,sf.q2.get(),pric2*int(sf.q2.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
         #pizza 3
         sf.c.create_rectangle(405, 290, 960, 410,width=2)
         sf.pep=PhotoImage(file="5-pepper-veg-pizza.png")
@@ -971,13 +1065,16 @@ class Pizza:
             else:
                 ch3="Regular"
                 pric3=225
-            sf.addlist(["5 Pepper     ",ch3,sf.q3.get(),pric3*int(sf.q3.get())])
+            try:
+                sf.addlist(["5 Pepper",ch3,sf.q3.get(),pric3*int(sf.q3.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
             
         #pizza 4
         sf.c.create_rectangle(405, 410, 960, 530,width=2)
         sf.mag=PhotoImage(file="Margherit.png")
         sf.c.create_image(470,470,image=sf.mag)
-        sf.c.create_text(650,440,text="Margherita",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,440,text="Margherita       ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(860,440,text="₹195/₹385/₹99",fill="#ff3838",font=("default",17,'bold'))
         #ch4=sf.check(sf.vegf2,460)
         sf.v4=IntVar()
@@ -1007,11 +1104,14 @@ class Pizza:
             else:
                 ch4="Regular"
                 pric4=99
-            sf.addlist(["Margherita  ",ch4,sf.q4.get(),pric4*int(sf.q4.get())])
+            try:
+                sf.addlist(["Margherita",ch4,sf.q4.get(),pric4*int(sf.q4.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
 
-        sf.con=Button(sf.vegf2,text="Confirm Order",command=lambda:sf.Orderde(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+        sf.con=Button(sf.vegf2,text="Confirm Order",command=lambda:sf.Orderde(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
         sf.con.place(x=1050,y=250)
-        sf.more=Button(sf.vegf2,text="Add More..",command=lambda:sf.menulist(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+        sf.more=Button(sf.vegf2,text="Add More..",command=lambda:sf.menulist(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
         sf.more.place(x=1050,y=350)
         sf.vegf2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
@@ -1025,25 +1125,28 @@ class Pizza:
             messagebox.showinfo("Cart","Item Successfully added")
         else:
             messagebox.showinfo("Cart","Enter Valid Quantity to add")
-        print(sf.cartlist,sf.amount)
         
 #--  page 10------
-    def nonvegpiz(sf,x):
+    def nonvegpiz(sf,x,username):
         sf.x=x
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
         #sf.scr.resizable(False, False)
         sf.nonvegf1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.nonvegf1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
+        sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
         sf.home=Button(sf.nonvegf1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
-        sf.home.place(x=1000,y=90)
+        sf.home.place(x=1200,y=90)
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(1000,50,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(950,50,text=sf.localtime,fill="white",font=("default",16))
         sf.nonvegf1.pack(fill=BOTH,expand=1)
 
         sf.nonvegf2=Frame(sf.scr,height=618,width=1366)
@@ -1067,7 +1170,7 @@ class Pizza:
         sf.c.create_rectangle(405, 50, 960, 170,width=2)
         sf.delu=PhotoImage(file="Non-Veg_Supreme.png")
         sf.c.create_image(470,110,image=sf.delu)
-        sf.c.create_text(650,80,text="Non-Veg Supreme",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,80,text="Non-Veg Supreme  ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(860,80,text="₹450/₹650/₹250",fill="#ff3838",font=("default",17,'bold'))
         #ch5=sf.check(sf.nonvegf2,100)
         sf.v5=IntVar()
@@ -1096,12 +1199,15 @@ class Pizza:
             else:
                 ch5="Regular"
                 pric5=250
-            sf.addlist(["Non-Veg Supreme",ch5,sf.q5.get(),pric5*int(sf.q5.get())])
+            try:
+                sf.addlist(["Non-Veg Supreme",ch5,sf.q5.get(),pric5*int(sf.q5.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
         #pizza 2
         sf.c.create_rectangle(405, 170, 960, 290,width=2)
         sf.vag=PhotoImage(file="nonChicken_Tikka.png")
         sf.c.create_image(470,230,image=sf.vag)
-        sf.c.create_text(650,200,text="Chicken Tikka",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,200,text="Chicken Tikka    ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(860,200,text="₹400/₹600/₹250",fill="#ff3838",font=("default",17,'bold'))
         #ch6=sf.check(sf.nonvegf2,220)
         sf.v6=IntVar()
@@ -1130,12 +1236,15 @@ class Pizza:
             else:
                 ch6="Regular"
                 pric6=250
-            sf.addlist(["Chicken Tikka",ch6,sf.q6.get(),pric6*int(sf.q6.get())])
+            try:
+                sf.addlist(["Chicken Tikka",ch6,sf.q6.get(),pric6*int(sf.q6.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
         #pizza 3
         sf.c.create_rectangle(405, 290, 960, 410,width=2)
         sf.pep=PhotoImage(file="non-Chicken_Sausage.png")
         sf.c.create_image(470,350,image=sf.pep)
-        sf.c.create_text(650,320,text="Chicken Sausage",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,320,text="Chicken Sausage  ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(860,320,text="₹385/₹550/₹225",fill="#ff3838",font=("default",17,'bold'))
         #ch7=sf.check(sf.nonvegf2,340)
         sf.v7=IntVar()
@@ -1164,12 +1273,15 @@ class Pizza:
             else:
                 ch7="Regular"
                 pric7=225
-            sf.addlist(["Chicken Sausage",ch7,sf.q7.get(),pric7*int(sf.q7.get())])
+            try:
+                sf.addlist(["Chicken Sausage",ch7,sf.q7.get(),pric7*int(sf.q7.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
         #pizza 4
         sf.c.create_rectangle(405, 410, 960, 530,width=2)
         sf.mag=PhotoImage(file="no-LoadedL.png")
         sf.c.create_image(470,470,image=sf.mag)
-        sf.c.create_text(650,440,text="Chicken Peri",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,440,text="Chicken Peri     ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(860,440,text="₹195/₹385/₹99",fill="#ff3838",font=("default",17,'bold'))
         #ch8=sf.check(sf.nonvegf2,460)
         sf.v8=IntVar()
@@ -1197,31 +1309,39 @@ class Pizza:
             else:
                 ch8="Regular"
                 pric8=99
-            sf.addlist(["Chicken Peri",ch8,sf.q8.get(),pric8*int(sf.q8.get())])
-        sf.con=Button(sf.nonvegf2,text="Confirm Order",command=lambda:sf.Orderde(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+            try:
+                sf.addlist(["Chicken Peri",ch8,sf.q8.get(),pric8*int(sf.q8.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
+        sf.con=Button(sf.nonvegf2,text="Confirm Order",command=lambda:sf.Orderde(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
         sf.con.place(x=1050,y=250)
-        sf.more=Button(sf.nonvegf2,text="Add More..",command=lambda:sf.menulist(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+        sf.more=Button(sf.nonvegf2,text="Add More..",command=lambda:sf.menulist(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
         sf.more.place(x=1050,y=350)
         sf.nonvegf2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
 
 #--  page 11------
-    def SpecialChi(sf,x):
+    def SpecialChi(sf,x,username):
         sf.x=x
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
+        
         #sf.scr.resizable(False, False)
         sf.spef1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.spef1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
+        sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
         sf.home=Button(sf.spef1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
-        sf.home.place(x=1000,y=90)
+        sf.home.place(x=1200,y=90)
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(1000,50,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(950,50,text=sf.localtime,fill="white",font=("default",16))
         sf.spef1.pack(fill=BOTH,expand=1)
 
         sf.spef2=Frame(sf.scr,height=618,width=1366)
@@ -1243,13 +1363,19 @@ class Pizza:
         sf.c.create_rectangle(405, 50, 960, 170,width=2)
         sf.delu=PhotoImage(file="roasted.png")
         sf.c.create_image(470,110,image=sf.delu)
-        sf.c.create_text(650,80,text="Roasted Chicken",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,80,text="Roasted Chicken  ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(875,80,text="₹109",fill="#ff3838",font=("default",17,'bold'))
         sf.c.create_text(590,120,text="Quantity : ",fill="#000000",font=("default",12))
         sf.qty9=Entry(sf.spef2,textvariable=sf.q9,bg="#aae2d7",font=("default",12),width=4,)
         sf.qty9.place(x=650,y=110)
-        sf.add9=Button(sf.spef2,text="ADD",command=lambda:sf.addlist(["Roasted Chicken",sf.q9.get(),109*int(sf.q9.get())]),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
+        sf.add9=Button(sf.spef2,text="ADD",command=lambda:addspe1(),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
         sf.add9.place(x=850,y=120)
+        def addspe1():
+            try:
+                sf.addlist(["Roasted Chicken",sf.q9.get(),109*int(sf.q9.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
+            
         #pizza 2
         sf.c.create_rectangle(405, 170, 960, 290,width=2)
         sf.vag=PhotoImage(file="chicken-meatballs.jpg")
@@ -1259,43 +1385,57 @@ class Pizza:
         sf.c.create_text(590,240,text="Quantity : ",fill="#000000",font=("default",12))
         sf.qty10=Entry(sf.spef2,textvariable=sf.q10,bg="#aae2d7",font=("default",12),width=4,)
         sf.qty10.place(x=650,y=230)
-        sf.add10=Button(sf.spef2,text="ADD",command=lambda:sf.addlist(["Chicken Meatballs",sf.q10.get(),99*int(sf.q10.get())]),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
+        sf.add10=Button(sf.spef2,text="ADD",command=lambda:addspe2(),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
         sf.add10.place(x=850,y=240)
+        def addspe2():
+            try:
+                sf.addlist(["Chicken Meatballs",sf.q10.get(),99*int(sf.q10.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
         #pizza 3
         sf.c.create_rectangle(405, 290, 960, 410,width=2)
         sf.pep=PhotoImage(file="Boneless-Chicken-wings-192x192.png")
         sf.c.create_image(470,350,image=sf.pep)
-        sf.c.create_text(650,320,text="Boneless Chicken",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,320,text="Boneless Chicken ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(875,320,text="₹139",fill="#ff3838",font=("default",17,'bold'))
         sf.c.create_text(590,360,text="Quantity : ",fill="#000000",font=("default",12))
         sf.qty11=Entry(sf.spef2,textvariable=sf.q11,bg="#aae2d7",font=("default",12),width=4,)
         sf.qty11.place(x=650,y=350)
-        sf.add11=Button(sf.spef2,text="ADD",command=lambda:sf.addlist(["Boneless Chiken",sf.q11.get(),139*int(sf.q11.get())]),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
+        sf.add11=Button(sf.spef2,text="ADD",command=lambda:addspe3(),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
         sf.add11.place(x=850,y=360)
-        sf.con=Button(sf.spef2,text="Confirm Order",command=lambda:sf.Orderde(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+        def addspe3():
+            try:
+                sf.addlist(["Boneless Chiken",sf.q11.get(),139*int(sf.q11.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
+        sf.con=Button(sf.spef2,text="Confirm Order",command=lambda:sf.Orderde(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
         sf.con.place(x=600,y=430)
-        sf.more=Button(sf.spef2,text="Add More..",command=lambda:sf.menulist(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
+        sf.more=Button(sf.spef2,text="Add More..",command=lambda:sf.menulist(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
         sf.more.place(x=630,y=500)
         sf.spef2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
 
 #--  page 12------
-    def sidebev(sf,x):
+    def sidebev(sf,x,username):
         sf.x=x
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
         #sf.scr.resizable(False, False)
         sf.sidef1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.sidef1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
+        sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
         sf.home=Button(sf.sidef1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
-        sf.home.place(x=1000,y=90)
+        sf.home.place(x=1200,y=90)
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(1000,50,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(950,50,text=sf.localtime,fill="white",font=("default",16))
         sf.sidef1.pack(fill=BOTH,expand=1)
 
         sf.sidef2=Frame(sf.scr,height=618,width=1366)
@@ -1317,57 +1457,78 @@ class Pizza:
         sf.c.create_rectangle(405, 50, 960, 170,width=2)
         sf.delu=PhotoImage(file="coke.png")
         sf.c.create_image(470,110,image=sf.delu)
-        sf.c.create_text(650,80,text="Coke Mobile",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,80,text="Coke Mobile      ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(875,80,text="₹45",fill="#ff3838",font=("default",17,'bold'))
         sf.c.create_text(590,120,text="Quantity : ",fill="#000000",font=("default",12))
         sf.qty12=Entry(sf.sidef2,textvariable=sf.q12,bg="#aae2d7",font=("default",12),width=4,)
         sf.qty12.place(x=650,y=110)
-        sf.add12=Button(sf.sidef2,text="ADD",command=lambda:sf.addlist(["Coke Moble",sf.q12.get(),45*int(sf.q12.get())]),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
+        sf.add12=Button(sf.sidef2,text="ADD",command=lambda:addsid1(),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
         sf.add12.place(x=850,y=120)
+        def addsid1():
+            try:
+                sf.addlist(["Coke Mobile",sf.q12.get(),45*int(sf.q12.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
         #pizza 2
         sf.c.create_rectangle(405, 170, 960, 290,width=2)
         sf.vag=PhotoImage(file="burger.png")
         sf.c.create_image(470,230,image=sf.vag)
-        sf.c.create_text(650,200,text="Burger Pizza",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,200,text="Burger Pizza     ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(875,200,text="₹99",fill="#ff3838",font=("default",17,'bold'))
         sf.c.create_text(590,240,text="Quantity : ",fill="#000000",font=("default",12))
         sf.qty13=Entry(sf.sidef2,textvariable=sf.q13,bg="#aae2d7",font=("default",12),width=4,)
         sf.qty13.place(x=650,y=230)
-        sf.add13=Button(sf.sidef2,text="ADD",command=lambda:sf.addlist(["Burger Pizza",sf.q13.get(),99*int(sf.q13.get())]),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
+        sf.add13=Button(sf.sidef2,text="ADD",command=lambda:addsid2(),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
         sf.add13.place(x=850,y=240)
+        def addsid2():
+            try:
+                sf.addlist(["Burger Pizza",sf.q13.get(),99*int(sf.q13.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
         #pizza 3
         sf.c.create_rectangle(405, 290, 960, 410,width=2)
         sf.pep=PhotoImage(file="white.png")
         sf.c.create_image(470,350,image=sf.pep)
-        sf.c.create_text(650,320,text="White Pasta",fill="#000000",font=("Cooper Black",20))
+        sf.c.create_text(650,320,text="White Pasta      ",fill="#000000",font=("Cooper Black",20))
         sf.c.create_text(875,320,text="₹135",fill="#ff3838",font=("default",17,'bold'))
         sf.c.create_text(590,360,text="Quantity : ",fill="#000000",font=("default",12))
         sf.qty14=Entry(sf.sidef2,textvariable=sf.q14,bg="#aae2d7",font=("default",12),width=4,)
         sf.qty14.place(x=650,y=350)
-        sf.add14=Button(sf.sidef2,text="ADD",command=lambda:sf.addlist(["White Pasta",sf.q14.get(),135*int(sf.q14.get())]),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
+        sf.add14=Button(sf.sidef2,text="ADD",command=lambda:addsid3(),bg="#0b1335",cursor="hand2",fg="white",bd=4,font=("default",12,'bold'))
         sf.add14.place(x=850,y=360)
-        sf.con=Button(sf.sidef2,text="Confirm Order",command=lambda:sf.Orderde(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+        def addsid3():
+            try:
+                sf.addlist(["White Pasta",sf.q14.get(),135*int(sf.q14.get())])
+            except:
+                messagebox.showinfo("Attention","Enter valid Quantity")
+        sf.con=Button(sf.sidef2,text="Confirm Order",command=lambda:sf.Orderde(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
         sf.con.place(x=600,y=430)
-        sf.more=Button(sf.sidef2,text="Add More..",command=lambda:sf.menulist(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
+        sf.more=Button(sf.sidef2,text="Add More..",command=lambda:sf.menulist(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
         sf.more.place(x=630,y=500)
         sf.sidef2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
 
 #--  page 13------
-    def Address(sf,x):
+    def Address(sf,x,username):
         sf.x=x
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
         #sf.scr.resizable(False, False)
         sf.addf1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.addf1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
-        sf.out=Button(sf.addf1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",font=("default",16))
-        sf.out.place(x=1200,y=100)
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
+        sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
+        sf.home=Button(sf.addf1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
+        sf.home.place(x=1200,y=90)
+        sf.localtime=time.asctime(time.localtime(time.time()))
+        sf.c.create_text(950,50,text=sf.localtime,fill="white",font=("default",16))
         sf.addf1.pack(fill=BOTH,expand=1)
 
         sf.addf2=Frame(sf.scr,height=618,width=1366)
@@ -1398,7 +1559,7 @@ class Pizza:
         sf.lab5.place(x=190,y=300)
         sf.lan=Entry(sf.addf2,bg="white",width=15,font=("default",18),bd=5)
         sf.lan.place(x=430,y=300)
-        sf.bc=Button(sf.addf2,text="Back",command=lambda:sf.Orderde(sf.x),cursor="hand2",fg="white",bg="#0b1335",font=("default",18),bd=5)
+        sf.bc=Button(sf.addf2,text="Back",command=lambda:sf.Orderde(sf.x,username),cursor="hand2",fg="white",bg="#0b1335",font=("default",18),bd=5)
         sf.bc.place(x=370,y=370)
         sf.rg=Button(sf.addf2,text="Order Now",command=lambda:sf.orderpay(sf.x),cursor="hand2",fg="white",bg="#0b1335",font=("default",18),bd=5)
         sf.rg.place(x=610,y=370)
@@ -1413,24 +1574,31 @@ class Pizza:
         sf.addf2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
 
+    def addressdetail(sf):
+        return sf.city.get(),sf.loc.get(),sf.buil.get(),sf.hou.get(),sf.lan.get()
+
         
 #--  page 14------
-    def Orderde(sf,x):
+    def Orderde(sf,x,username):
         sf.x=x
         sf.scr.destroy()
         sf.scr=Tk()
-        sf.scr.title("Shusisha's Pizza")
         sf.scr.geometry("1366x768")
+        sf.scr.title("Shusisha's Pizza")
+        sf.scr.iconbitmap('p.ico')
         #sf.scr.resizable(False, False)
         sf.ordf1=Frame(sf.scr,height=150,width=1366)
         sf.c=Canvas(sf.ordf1,height=150,width=1366)
         sf.c.pack()
         sf.logo=PhotoImage(file="logo.PNG")
         sf.c.create_image(683,75,image=sf.logo)
+        sf.c.create_text(950,90,text="WELCOME",fill="white",font=("default",20))
+        sf.name=username
+        sf.c.create_text(950,120,text=sf.name,fill="white",font=("default",18))
         sf.home=Button(sf.ordf1,text="Log Out",command=lambda:sf.Login(),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",16,'bold'))
-        sf.home.place(x=1000,y=90)
+        sf.home.place(x=1200,y=90)
         sf.localtime=time.asctime(time.localtime(time.time()))
-        sf.c.create_text(1000,50,text=sf.localtime,fill="white",font=("default",16))
+        sf.c.create_text(950,50,text=sf.localtime,fill="white",font=("default",16))
         sf.ordf1.pack(fill=BOTH,expand=1)
         
         sf.ordf2=Frame(sf.scr,height=618,width=1366)
@@ -1440,27 +1608,62 @@ class Pizza:
         sf.c.create_image(683,309,image=sf.logo1)
         sf.log=Label(sf.ordf2,text="YOUR ORDER",bg="#9db1f2",font=("Cooper Black",22))
         sf.log.place(x=450,y=4)
-        sf.c.create_rectangle(250, 50, 800, 500,fill="#d3ede6",outline="white",width=6)
+        sf.c.create_rectangle(200, 50, 875, 550,fill="#d3ede6",outline="white",width=6)
+        sf.con=connect("pizza.db")
+        sf.cur=sf.con.cursor()
+        try:
+            sf.cur.execute("create table orderdetail(id integer primary key,username varchar(50),name varchar(50),mobile varchar(50),money varchar(10) not null,address varchar ,orderdet varchar not null)")
+        except:
+            pass
+        x=sf.cur.execute("select count(*) from orderdetail")
+        ordno="Order No. : "+str(list(x)[0][0]+1)
+        sf.orde=Label(sf.ordf2,text=ordno,bg="#f2da9d",width=20,font=("Cooper Black",20))
+        sf.orde.place(x=900,y=100)
         sf.amt=sf.amount
-        sf.text="Total : "+str(sf.amt)
-        sf.tot=Label(sf.ordf2,text=sf.text,bg="#f2da9d",width=12,font=("Cooper Black",22))
+        sf.ordtax="Tax : ₹ "+str("%.2f"%(sf.amt*0.05))
+        sf.ordser="Serv. Char. : ₹ "+str("%.2f"%(sf.amt/99))
+        sf.ordtot=sf.amt+sf.amt*0.05+sf.amt/99
+        sf.ordt=Label(sf.ordf2,text=sf.ordtax,bg="#f2da9d",width=20,font=("Cooper Black",20))
+        sf.ordt.place(x=900,y=150)
+        sf.ords=Label(sf.ordf2,text=sf.ordser,bg="#f2da9d",width=20,font=("Cooper Black",20))
+        sf.ords.place(x=900,y=200)
+        sf.text="Total : ₹ "+str(int(sf.ordtot))
+        sf.tot=Label(sf.ordf2,text=sf.text,bg="#f2da9d",width=20,font=("Cooper Black",20))
         sf.tot.place(x=900,y=250)
         if sf.x=="deli":
             sf.y=sf.Address
         if sf.x=="pick":
             sf.y=sf.orderpay
-        sf.pay=Button(sf.ordf2,text="Pay",command=lambda:sf.y(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
-        sf.pay.place(x=900,y=300)
-        sf.exi=Button(sf.ordf2,text="Add more",command=lambda:sf.menulist(sf.x),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
-        sf.exi.place(x=1070,y=300)
-        sf.c.create_text(525,80,text="Items\tSize\tQty\tPrice",font=("cooper black",18))
-        sf.c.create_text(525,90,text="_______________________________________",font=("cooper black",18))
-        y=100
+        sf.pay=Button(sf.ordf2,text="Pay",command=lambda:nozero(sf.amt),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+        sf.pay.place(x=930,y=300)
+        def nozero(x):
+            if x==0:
+                messagebox.showinfo("Pay","Place Some Order")
+            else:
+                sf.Address(sf.x,username)
+        sf.exi=Button(sf.ordf2,text="Add more",command=lambda:sf.menulist(sf.x,username),bg="#0b1335",cursor="hand2",fg="white",bd=5,font=("default",18,'bold'))
+        sf.exi.place(x=1100,y=300)
+        sf.c.create_text(525,80,text="     Items\t      Size   Qty    Price",font=("Consolas",18,"bold","italic"))
+        sf.c.create_text(525,85,text="_"*50,font=("cooper black",18))
+        #sf.yaxis=110
+        listbox=Frame(sf.ordf2,height=450,width=675)
+        listbox.place(x=210,y=100)
+        listNodes = Listbox(listbox,bg="#d3ede6",width=49,height=15,font=("Consolas", 18))
+        listNodes.pack(side="left", fill="y")
+
+        scrollbar = Scrollbar(listbox,orient="vertical")
+        scrollbar.config(command=listNodes.yview)
+        scrollbar.pack(side="right", fill="y")
+
+        listNodes.config(yscrollcommand=scrollbar.set)
+        c=0
         for i in sf.cartlist:
-            y+=30
-            s=i[0]+"\t"+i[1]+"\t"+i[2]+"\t"+str(i[3])
-            sf.c.create_text(525,y,text=s,font=("default",16))
-            
+            c=c+1
+            if len(i)==4:
+                sf.s="{:<3}{:<21}{:<9}{:<6}{}".format(str(c)+".",i[0],i[1],i[2],i[3])
+            else:
+                sf.s="{:<3}{:<21}{:<9}{:<6}{}".format(str(c)+".",i[0],"  --  ",i[1],i[2])
+            listNodes.insert(END,str(sf.s))
         sf.ordf2.pack(fill=BOTH,expand=1)
         sf.scr.mainloop()
 
@@ -1481,34 +1684,46 @@ class Pizza:
                 messagebox.showinfo("Login","You are Not Registered Yet")
             
         else:
+            y=sf.cur.execute("select first,last from customer where username=%r"%(sf.credlog[0]))
             messagebox.showinfo("Login","You have Successfully Log In\nWelcome to the Shusisha's Pizza")            
-            sf.pizmain()
+            sf.pizmain(list(y)[0])
 
     def Regdatabase(sf):
         sf.credreg=sf.resultreg()
-        sf.con=connect("pizza.db")
-        sf.cur=sf.con.cursor()
-        try:
-            sf.cur.execute("create table customer(username varchar(50) not null,password varchar(50) not null,first varchar(50) not null,last varchar(50) not null,email varchar(50),mob varchar(50) not null)")
-        except:
-            pass
-        x=sf.cur.execute("select count(*) from customer where username=%r and mob=%r "%(sf.credreg[0],sf.credreg[5]))
-        if list(x)[0][0]==0:
-            if sf.credreg[0]=="" or sf.credreg[1]=="" or sf.credreg[2]=="" or sf.credreg[3]=="" or sf.credreg[5]=="":
-                messagebox.showinfo("Register","Empty Entry is not Allowed(except Email)")
-            else:
-                sf.cur.execute("insert into customer values(%r,%r,%r,%r,%r,%r)"%(sf.credreg[0],sf.credreg[1],sf.credreg[2],sf.credreg[3],sf.credreg[4],sf.credreg[5]))
-                sf.con.commit()
-                messagebox.showinfo("Register","You are Successfully Registered")
-                sf.Login()
+        if sf.credreg[0].isspace()==True or sf.credreg[1].isspace()==True or sf.credreg[2].isspace()==True or sf.credreg[3].isspace()==True or sf.credreg[4].isspace()==True or sf.credreg[5].isspace()==True or sf.credreg[0]=="" or sf.credreg[1]=="" or sf.credreg[2]=="" or sf.credreg[3]=="" or sf.credreg[4]=="" or sf.credreg[5]=="":
+            messagebox.showinfo("Register","Empty Entry is not Allowed")
         else:
-            messagebox.showinfo("Register","Username Already Exist \nEnter New Username")
-
+            if sf.credreg[2].isalpha()!=True or sf.credreg[3].isalpha()!=True:
+                messagebox.showinfo("Name","Name must contain alphabat only") 
+            elif sf.credreg[0][0].isupper()!=True or sf.credreg[0]!=sf.credreg[0].split()[0]:
+                messagebox.showinfo("Username","First letter must be Uppercase and No space is Allowed")
+            elif len(sf.credreg[1])<6:
+                messagebox.showinfo("Password","Password must be of minimum 6 letter")
+            elif not re.match(r'^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$',sf.credreg[4]):
+                messagebox.showinfo("Email","Enter valid email address")
+            elif sf.credreg[5].isdigit()!=True or len(sf.credreg[5])!=10:
+                messagebox.showinfo("Mobile No.","Enter valid 10-digit Mobile No.")                
+            else:
+                sf.con=connect("pizza.db")
+                sf.cur=sf.con.cursor()
+                try:
+                    sf.cur.execute("create table customer(username varchar(50) not null,password varchar(50) not null,first varchar(50) not null,last varchar(50) not null,email varchar(50),mob varchar(50) not null)")
+                except:
+                    pass
+                x=sf.cur.execute("select count(*) from customer where username=%r or mob=%r or email=%r"%(sf.credreg[0],sf.credreg[5],sf.credreg[4]))
+                if list(x)[0][0]==0:
+                    sf.cur.execute("insert into customer values(%r,%r,%r,%r,%r,%r)"%(sf.credreg[0],sf.credreg[1],sf.credreg[2].capitalize(),sf.credreg[3].capitalize(),sf.credreg[4],sf.credreg[5]))
+                    sf.con.commit()
+                    messagebox.showinfo("Register","You are Successfully Registered")
+                    sf.Login()
+                else:
+                    messagebox.showinfo("Register","You are Already Registered.. \nEnter New Username,Email and Mobile No.")
+            
     def admindatabase(sf):
         sf.credadm=sf.resultadmin()
         sf.con=connect("pizza.db")
         sf.cur=sf.con.cursor()
-        x=sf.cur.execute("select count(*) from admin where username=%r and password=%r"%(sf.credadm[0],sf.credadm[1]))
+        x=sf.cur.execute("select count(*) from employee where username=%r and password=%r"%(sf.credadm[0],sf.credadm[1]))
         if list(x)[0][0]==0:
             if sf.credadm[0]=="" or sf.credadm[1]=="":
                 messagebox.showinfo("Admin","Empty Entry is not allowed")
@@ -1516,12 +1731,24 @@ class Pizza:
                 messagebox.showinfo("Admin","You are Not Registered Yet")
             
         else:
+            y=sf.cur.execute("select empid from employee where username=%r"%(sf.credadm[0]))
             messagebox.showinfo("Admin","You have Successfully Log In")            
-            sf.adminmain()
+            sf.adminmain(list(y)[0])
 
     def adminorderdetail(sf):
         sf.credadmord=sf.resultadminorder()
-        if sf.money!=0 and sf.credadmord[0]!="" and sf.credadmord[1]!="":
+        q1=""
+        for i in sf.credadmord[0].split():
+            q1=q1+i
+        if sf.credadmord[0]=="" or sf.credadmord[1]=="" or sf.credadmord[0].isspace()==True or sf.credadmord[1].isspace()==True:
+            messagebox.showinfo("Attention","Enter Customer's Name and Mobile No")
+        elif q1.isalpha()!=True:
+                messagebox.showinfo("Attention","Name must contain alphabat only")
+        elif sf.credadmord[1].isdigit()!=True or len(sf.credadmord[1])!=10:
+                messagebox.showinfo("Mobile No.","Enter valid 10-digit Mobile No.")
+        elif sf.money==0:
+            messagebox.showinfo("Attention","Order Something and then press Total Button")
+        else:
             if messagebox.askyesno("Pay","Want to make payment"):
                 sf.con=connect("pizza.db")
                 sf.cur=sf.con.cursor()
@@ -1530,23 +1757,27 @@ class Pizza:
                     sf.cur.execute("create table orderdetail(id integer primary key,username varchar(50),name varchar(50),mobile varchar(50),money varchar(10) not null,address varchar ,orderdet varchar not null)")
                 except:
                     pass
-                for i in sf.credadmord[3:]:
-                    if i[-1]!="0":
+                for i in sf.credadmord[2:]:
+                    if i[-1]=='0':
+                        pass
+                    else:
                         od.append(i)
                 a=sf.credadmord[0]
                 b=sf.credadmord[1]
-                print(a,b,str(sf.money),od)
-                s="insert into orderdetail(name,mobile,money,orderdet) values(%r,%r,%r,%r)"%(a,b,str(sf.money),str(od))
+                s="insert into orderdetail(name,mobile,money,orderdet) values(%r,%r,%r,%r)"%(a.capitalize(),b,str(sf.money),str(od))
                 sf.cur.execute(s)
                 sf.con.commit()
                 messagebox.showinfo("Pay","Successfully Paid")
-        else:
-            messagebox.showinfo("Pay","Enter Customer's Name and Mobile No  and  Order Something")
-    #except:
-         #   messagebox.showinfo("Pay","Enter Total button then Pay button")
+                sleep(2)
+                messagebox.showinfo("New Order","Enter the Reset button to place New Order")
+            
     def orderpay(sf,x):
-        
-        messagebox.showinfo("Pay","Payment Method is not available now")
-        
-x=Pizza()
-x.main()
+        sf.credadd=sf.addressdetail()
+        if sf.credadd[0].isspace()==True or sf.credadd[1].isspace()==True or sf.credadd[2].isspace()==True or sf.credadd[3].isspace()==True or sf.credadd[4].isspace()==True or sf.credadd[0]=="" or sf.credadd[1]=="" or sf.credadd[2]=="" or sf.credadd[3]=="" or sf.credadd[4]=="":
+            messagebox.showinfo("Address","Empty Entry is not Allowed")
+        else:
+            messagebox.showinfo("Pay","Payment Method is not available now")
+
+if __name__=="__main__":
+    x=Pizza()
+    x.main()
